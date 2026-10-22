@@ -16,6 +16,9 @@ public class GameManager : MonoBehaviour
     private int spawnPos = 1;
     [SerializeField] private int spawnDistance = 20;
 
+    [SerializeField] private float roadProbability = 0.5f;
+    [SerializeField] private Road roadPrefab;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -25,21 +28,21 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 cameraPos = new(Body.position.x, 4, Body.position.z -3);
+        Vector3 cameraPos = new(Body.position.x, 4, Body.position.z - 3);
         cameraPos.z = Mathf.Clamp(cameraPos.z, -5, 6);
         Camera.main.transform.position = cameraPos;
     }
 
-    private void NewLevel()
+    public void NewLevel()
     {
         spawnPos = 1;
         Body.position = new(0, 0.7f, 0);
-        foreach(Transform t in terrainHolder)
+        foreach (Transform t in terrainHolder)
         {
             Destroy(t.gameObject);
         }
 
-        for(int i = 0; i < spawnDistance; i++)
+        for (int i = 0; i < spawnDistance; i++)
         {
             SpawnObstacle();
         }
@@ -47,8 +50,16 @@ public class GameManager : MonoBehaviour
 
     private void SpawnObstacle()
     {
-        Grass g = Instantiate(grassPrefab, terrainHolder);
-        g.Init(spawnPos);
+        if (Random.value < roadProbability)
+        {
+            Road r = Instantiate(roadPrefab, terrainHolder);
+            r.Init(spawnPos);
+        }
+        else
+        {
+            Grass g = Instantiate(grassPrefab, terrainHolder);
+            g.Init(spawnPos);
+        }
         spawnPos++;
     }
 
@@ -68,7 +79,7 @@ public class GameManager : MonoBehaviour
         float elapsed = 0f;
         Vector3 startPos = Body.position;
 
-        while(elapsed < moveDuration)
+        while (elapsed < moveDuration)
         {
             float percent = elapsed / moveDuration;
             Vector3 newPoint = Vector3.Lerp(startPos, v, percent);
